@@ -1,0 +1,31 @@
+# Smart Campus Waste Disposal System — YOLO Dataset Configuration
+# Defines 22 classes (1 human safety class + 21 fine-grained waste classes)
+
+path: waste_dataset
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: person
+  1: plastic_bottle
+  2: plastic_container
+  3: plastic_cup
+  4: plastic_bag
+  5: aluminum_can
+  6: metal_can
+  7: glass_bottle
+  8: glass_jar
+  9: paper
+  10: cardboard
+  11: newspaper
+  12: food_waste
+  13: fruit_waste
+  14: vegetable_waste
+  15: battery
+  16: mobile_phone
+  17: electronic_waste
+  18: textile
+  19: sanitary_waste
+  20: non_recyclable
+  21: other_waste
