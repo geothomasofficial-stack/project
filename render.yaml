@@ -1,0 +1,26 @@
+# Render Blueprint Configuration for Smart Campus Waste Management System
+services:
+  # 1. FastAPI Python YOLO Inference Microservice
+  - type: web
+    name: smart-campus-yolo-service
+    env: docker
+    dockerfilePath: ./yolo_service/Dockerfile
+    dockerContext: ./yolo_service
+    plan: free
+    envVars:
+      - key: YOLO_MODEL_PATH
+        value: yolov8n.pt
+      - key: WASTE_CONFIDENCE_THRESHOLD
+        value: "0.25"
+      - key: PERSON_CONFIDENCE_THRESHOLD
+        value: "0.20"
+
+  # 2. Vite React Frontend Web Application (Static Site)
+  - type: web
+    name: smart-campus-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_YOLO_SERVICE_URL
+        value: https://smart-campus-yolo-service.onrender.com/classify
