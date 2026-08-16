@@ -8,7 +8,7 @@ import {
   MOCK_RECENT_TRANSACTIONS, 
   MOCK_DISPOSALS
 } from '../constants/mockData';
-import { DAILY_REWARDED_CAP, WASTE_CREDIT_VALUES } from '../constants/ecoConfig';
+import { WASTE_CREDIT_VALUES } from '../constants/ecoConfig';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
