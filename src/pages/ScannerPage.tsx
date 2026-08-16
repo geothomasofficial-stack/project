@@ -316,53 +316,59 @@ export const ScannerPage: React.FC<ScannerPageProps> = ({ onDisposalSuccess }) =
         }
 
         detectionsToDraw.forEach((det, idx) => {
-          let x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+          let normX1 = 0.15, normY1 = 0.10, normX2 = 0.85, normY2 = 0.88;
 
-          if (det.normalized_bbox) {
-            x1 = det.normalized_bbox[0] * img.width;
-            y1 = det.normalized_bbox[1] * img.height;
-            x2 = det.normalized_bbox[2] * img.width;
-            y2 = det.normalized_bbox[3] * img.height;
-          } else if (det.bbox) {
-            x1 = det.bbox[0];
-            y1 = det.bbox[1];
-            x2 = det.bbox[2];
-            y2 = det.bbox[3];
-          } else {
-            x1 = img.width * 0.20;
-            y1 = img.height * 0.12;
-            x2 = img.width * 0.80;
-            y2 = img.height * 0.88;
+          if (det.normalized_bbox && det.normalized_bbox.length === 4) {
+            normX1 = det.normalized_bbox[0];
+            normY1 = det.normalized_bbox[1];
+            normX2 = det.normalized_bbox[2];
+            normY2 = det.normalized_bbox[3];
+          } else if (det.bbox && det.bbox.length === 4) {
+            // Convert pixel bbox to normalized ratio if > 1.0
+            const rawW = det.bbox[2] > det.bbox[0] ? (det.bbox[2] > 1.0 ? 640 : 1.0) : 1.0;
+            const rawH = det.bbox[3] > det.bbox[1] ? (det.bbox[3] > 1.0 ? 640 : 1.0) : 1.0;
+            normX1 = det.bbox[0] > 1.0 ? det.bbox[0] / rawW : det.bbox[0];
+            normY1 = det.bbox[1] > 1.0 ? det.bbox[1] / rawH : det.bbox[1];
+            normX2 = det.bbox[2] > 1.0 ? det.bbox[2] / rawW : det.bbox[2];
+            normY2 = det.bbox[3] > 1.0 ? det.bbox[3] / rawH : det.bbox[3];
           }
 
-          const boxWidth = Math.max(x2 - x1, 40);
-          const boxHeight = Math.max(y2 - y1, 40);
+          // Scale normalized ratios to actual image width/height
+          const x1 = Math.round(normX1 * img.width);
+          const y1 = Math.round(normY1 * img.height);
+          const x2 = Math.round(normX2 * img.width);
+          const y2 = Math.round(normY2 * img.height);
+
+          const boxWidth = Math.max(x2 - x1, 50);
+          const boxHeight = Math.max(y2 - y1, 50);
 
           // Bright Gold Bounding Box Style (#E6C65C / #D4AF37)
           const isPrimary = idx === 0;
           ctx.strokeStyle = isPrimary ? '#E6C65C' : '#10B981';
-          ctx.lineWidth = Math.max(4, Math.round(img.width / 160));
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-          ctx.shadowBlur = 10;
+          ctx.lineWidth = Math.max(4, Math.round(img.width / 140));
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+          ctx.shadowBlur = 12;
           ctx.strokeRect(x1, y1, boxWidth, boxHeight);
 
-          // Top Label Header Badge (e.g. BOTTLE 86.5%)
+          // Top Label Header Badge (e.g. BOTTLE 88.5%)
           const confVal = det.confidence > 1 ? det.confidence : (det.confidence * 100);
           const labelText = `${det.class_name.replace(/_/g, ' ').toUpperCase()} ${confVal.toFixed(1)}%`;
-          ctx.font = `bold ${Math.max(15, Math.round(img.width / 35))}px sans-serif`;
+          const fontSize = Math.max(14, Math.round(img.width / 32));
+          ctx.font = `bold ${fontSize}px sans-serif`;
           const textMetrics = ctx.measureText(labelText);
-          const badgeHeight = Math.max(26, Math.round(img.width / 22));
-          const badgeWidth = textMetrics.width + 20;
+          const badgeHeight = Math.max(28, Math.round(img.width / 22));
+          const badgeWidth = textMetrics.width + 24;
 
-          const badgeY = Math.max(0, y1 - badgeHeight);
+          // Safe badge Y position (outside top of box if space permits, inside top if near border)
+          const badgeY = y1 >= badgeHeight + 4 ? y1 - badgeHeight : y1 + 4;
 
-          // Draw Yellow/Gold Solid Label Box
+          // Draw Solid Gold/Yellow Label Box
           ctx.fillStyle = isPrimary ? '#E6C65C' : '#10B981';
           ctx.fillRect(x1, badgeY, badgeWidth, badgeHeight);
 
           // Draw Dark Contrast Text inside Label Box
           ctx.fillStyle = '#09291F';
-          ctx.fillText(labelText, x1 + 10, badgeY + badgeHeight - 7);
+          ctx.fillText(labelText, x1 + 12, badgeY + badgeHeight - 8);
         });
       };
     }
